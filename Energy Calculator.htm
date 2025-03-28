@@ -1,0 +1,78 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export default function EnergyCalculator() {
+  const [appliances, setAppliances] = useState([
+    { name: "Television", watts: 75, quantity: 1, hours: 6 },
+    { name: "Light Bulbs", watts: 15, quantity: 4, hours: 6 },
+  ]);
+  const [gridCost, setGridCost] = useState(63.44); // Default tariff
+  const [solarCost, setSolarCost] = useState(0); // Assume zero running cost
+
+  const addAppliance = () => {
+    setAppliances([...appliances, { name: "", watts: 0, quantity: 1, hours: 1 }]);
+  };
+
+  const updateAppliance = (index, field, value) => {
+    const newAppliances = [...appliances];
+    newAppliances[index][field] = value;
+    setAppliances(newAppliances);
+  };
+
+  const calculateSavings = () => {
+    const totalGridCost = appliances.reduce((total, app) => {
+      const dailyConsumption = (app.watts * app.quantity * app.hours) / 1000;
+      return total + dailyConsumption * gridCost;
+    }, 0);
+
+    return { totalGridCost, totalSolarCost: 0 };
+  };
+
+  const { totalGridCost } = calculateSavings();
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Energy Calculator</h1>
+      <div className="grid grid-cols-4 gap-2 font-bold mb-2">
+        <span>Appliances</span>
+        <span>Wattage</span>
+        <span>Quantity</span>
+        <span>Daily usage hours</span>
+      </div>
+      {appliances.map((app, index) => (
+        <Card key={index} className="mb-2 p-2">
+          <CardContent className="grid grid-cols-4 gap-2">
+            <Input
+              placeholder="Appliance Name"
+              value={app.name}
+              onChange={(e) => updateAppliance(index, "name", e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Watts"
+              value={app.watts}
+              onChange={(e) => updateAppliance(index, "watts", Number(e.target.value))}
+            />
+            <Input
+              type="number"
+              placeholder="Quantity"
+              value={app.quantity}
+              onChange={(e) => updateAppliance(index, "quantity", Number(e.target.value))}
+            />
+            <Input
+              type="number"
+              placeholder="Hours/Day"
+              value={app.hours}
+              onChange={(e) => updateAppliance(index, "hours", Number(e.target.value))}
+            />
+          </CardContent>
+        </Card>
+      ))}
+      <Button onClick={addAppliance} className="mb-4">Add Appliance</Button>
+      <h2 className="text-lg font-semibold">Estimated Monthly Cost (Grid): ₦{(totalGridCost * 30).toFixed(2)}</h2>
+      <h2 className="text-lg font-semibold">Estimated Monthly Cost (Solar): ₦0 (No Running Cost)</h2>
+    </div>
+  );
+}
